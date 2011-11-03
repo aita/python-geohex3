@@ -31,7 +31,7 @@ class Zone(ZoneBase):
         h_xy = loc2xy(h_lon, h_lat)
         h_x = h_xy[0]
         h_y = h_xy[1]
-        h_deg = math.tan(math.pi * (60 / 180))
+        h_deg = math.tan(math.pi * (60.0 / 180.0))
 
         h_size = self.getHexSize()
         h_top = xy2loc(h_x, h_y + h_deg *  h_size)[1]
