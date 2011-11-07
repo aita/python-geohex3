@@ -9,7 +9,7 @@ import math
 
 __all__ = ['Zone', 'getZoneByLocation', 'getZoneByCode']
 
-H_KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+H_KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 H_BASE = 20037508.34
 H_DEG = math.pi * (30.0 / 180.0)
 H_K = math.tan(H_DEG)
@@ -90,14 +90,14 @@ def getZoneByLocation(lat, lon, level):
         h_y = h_xy
 
     h_code = ""
-    code3_x = [0] * level
-    code3_y = [0] * level
+    code3_x = [0] * (level + 1)
+    code3_y = [0] * (level + 1)
     code3 = ""
     code9 = ""
     mod_x = h_x
     mod_y = h_y
 
-    for i in range(level):
+    for i in range(level + 1):
         h_pow = math.pow(3, level - i)
         if mod_x >= ceil_int(h_pow/2):
             code3_x[i] = 2
@@ -111,7 +111,7 @@ def getZoneByLocation(lat, lon, level):
         if mod_y >= ceil_int(h_pow/2):
             code3_y[i] =2
             mod_y -= h_pow
-        elif mod_y <= ceil_int(h_pow/2):
+        elif mod_y <= -ceil_int(h_pow/2):
              code3_y[i] =0
              mod_y += h_pow
         else:
