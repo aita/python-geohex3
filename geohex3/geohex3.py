@@ -9,7 +9,7 @@ import math
 
 __all__ = ['Zone', 'getZoneByLocation', 'getZoneByCode']
 
-H_KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+H_KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 H_BASE = 20037508.34
 H_DEG = math.pi * (30.0 / 180.0)
 H_K = math.tan(H_DEG)
@@ -90,14 +90,14 @@ def getZoneByLocation(lat, lon, level):
         h_y = h_xy
 
     h_code = ""
-    code3_x = [0] * level
-    code3_y = [0] * level
+    code3_x = [0] * (level + 1)
+    code3_y = [0] * (level + 1)
     code3 = ""
     code9 = ""
     mod_x = h_x
     mod_y = h_y
 
-    for i in range(level):
+    for i in range(level + 1):
         h_pow = math.pow(3, level - i)
         if mod_x >= ceil_int(h_pow/2):
             code3_x[i] = 2
@@ -111,7 +111,7 @@ def getZoneByLocation(lat, lon, level):
         if mod_y >= ceil_int(h_pow/2):
             code3_y[i] =2
             mod_y -= h_pow
-        elif mod_y <= ceil_int(h_pow/2):
+        elif mod_y <= -ceil_int(h_pow/2):
              code3_y[i] =0
              mod_y += h_pow
         else:
@@ -132,14 +132,14 @@ def getZoneByLocation(lat, lon, level):
 
     return Zone(z_loc_y, z_loc_x, h_x, h_y, h_code)
 
-def getZoneByCode(code):
+def getZoneByCode(code, offset_x=0, offset_y=0):
     level = len(code)
     h_size =  calcHexSize(level)
     unit_x = 6 * h_size;
     unit_y = 6 * h_size * H_K
-    h_x = 0;
-    h_y = 0;
-    h_dec9 = str(H_KEY.find(code[0]) * 30 + H_KEY.find(code[1]) + int(code[2:]))
+    h_x = 0
+    h_y = 0
+    h_dec9 = str(H_KEY.find(code[0]) * 30 + H_KEY.find(code[1])) + code[2:]
     if h_dec9[0] in "15" and h_dec9[1] not in "125" and h_dec9[2] not in "125":
         if h_dec9[0] == '5':
             h_dec9 = "7" + h_dec9[1:len(h_dec9)]
@@ -167,16 +167,19 @@ def getZoneByCode(code):
         h_decx[i] = h_dec3[i * 2]
         h_decy[i] = h_dec3[i * 2 + 1]
 
-    for i in range(level):
+    for i in range(level + 1):
         h_pow = math.pow(3, level-i)
-        if h_decx[i] == 0:
+        if h_decx[i] == '0':
             h_x -= h_pow
-        elif h_decx[i] == 2:
+        elif h_decx[i] == '2':
             h_x += h_pow
-        if h_decy[i] == 0:
+        if h_decy[i] == '0':
             h_y -= h_pow
-        elif h_decy[i] == 2:
+        elif h_decy[i] == '2':
             h_y += h_pow
+
+    h_x += offset_x
+    h_y += offset_y
 
     h_lat_y = (H_K * h_x * unit_x + h_y * unit_y) / 2
     h_lon_x = (h_lat_y - h_y * unit_y) / H_K
@@ -190,8 +193,11 @@ def getZoneByCode(code):
          h_loc.lon += 360;
          h_x += math.pow(3, level)
          h_y -= math.pow(3, level)
-         
-    return Zone(h_loc.lat, h_loc.lon, h_x, h_y, code)
+
+    if offset_x == 0 and offset_y == 0:
+        return Zone(h_loc.lat, h_loc.lon, h_x, h_y, code)
+    else:
+        return getZoneByLocation(h_loc.lat, h_loc.lon, level - 2)
 
 def loc2xy(lon, lat):
     x = lon * H_BASE / 180.0
